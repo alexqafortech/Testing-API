@@ -1,0 +1,18 @@
+# Виртуальное окружение
+venv/
+.venv/
+
+# Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+
+# pytest и покрытие
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Редакторы и ОС
+.idea/
+.vscode/
+.DS_Store
