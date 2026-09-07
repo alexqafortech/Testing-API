@@ -19,4 +19,3 @@ def test_user_check_password_correct():
 def test_user_check_password_wrong():
     user = User.create("a@b.io", "Password1")
     assert user.check_password("WrongPass1") is False
-
