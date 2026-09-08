@@ -1,0 +1,14 @@
+{
+  "alice@example.com": {
+    "email": "alice@example.com",
+    "password_hash": "19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd"
+  },
+  "bob@test.org": {
+    "email": "bob@test.org",
+    "password_hash": "19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd"
+  },
+  "carol@domain.io": {
+    "email": "carol@domain.io",
+    "password_hash": "19513fdc9da4fb72a4a05eb66917548d3c90ff94d5419e1f2363eea89dfee1dd"
+  }
+}
