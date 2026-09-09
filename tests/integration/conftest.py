@@ -18,3 +18,4 @@ def registered_user(user_service, valid_credentials):
     """Готовый зарегистрированный пользователь"""
     user_service.register(**valid_credentials)
     return valid_credentials
+
