@@ -1,13 +1,10 @@
 import pytest
-from user_service import UserService, InvalidCredentialsError
+from user_service import InvalidCredentialsError
 
 @pytest.fixture
-def user_service_with_alice(tmp_path):
-    storage = tmp_path / "users.json"
-    storage.write_text("{}")
-    service = UserService(storage_path = storage)
-    service.register("alice@example.com", "Password123")
-    return service
+def user_service_with_alice(user_service):
+    user_service.register("alice@example.com", "Password123")
+    return user_service
 
 @pytest.mark.regression
 @pytest.mark.auth

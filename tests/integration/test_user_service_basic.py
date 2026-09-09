@@ -1,11 +1,4 @@
 import pytest
-from user_service import UserService
-
-@pytest.fixture
-def user_service(tmp_path):
-    storage = tmp_path / "users.json"
-    storage.write_text("{}")
-    return UserService(storage_path = storage)
 
 @pytest.mark.regression
 @pytest.mark.auth

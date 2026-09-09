@@ -1,23 +1,5 @@
 import pytest
-from user_service import UserService, UserNotFoundError
-
-@pytest.fixture
-def user_service(tmp_path):
-    storage = tmp_path / "users.json"
-    storage.write_text("{}")
-    service = UserService(storage_path = storage)
-
-    yield service
-
-    if storage.exists():
-        storage.write_text("{}")
-
-@pytest.fixture
-def registered_user(user_service):
-    email = "alice@example.com"
-    password = "Password123"
-    user_service.register(email, password)
-    return {"email": email, "password": password}
+from user_service import UserNotFoundError
 
 @pytest.mark.smoke
 @pytest.mark.storage
