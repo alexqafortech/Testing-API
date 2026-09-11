@@ -1,13 +1,16 @@
 import pytest
 import requests
 import uuid
+from src.config import Config
+from src.clients.auth_client import AuthClient
+from src.clients.tasks_client import TasksClient
+
+@pytest.fixture(scope = "session")
+def config():
+    return Config()
 
 @pytest.fixture(scope='session')
-def base_url():
-    return "http://localhost:8000"
-
-@pytest.fixture(scope='session')
-def api_session(base_url):
+def api_session():
     """HTTP-сессия, используемая между тестами"""
     session = requests.Session()
     session.headers.update({
@@ -19,6 +22,14 @@ def api_session(base_url):
 
     session.close()
 
+@pytest.fixture(scope='session', autouse=True)
+def check_api_available(config):
+    try:
+        response = requests.get(f"{config.BASE_URL}/health", timeout=10)
+        assert response.status_code == 200, f"API вернул {response.status_code}"
+    except requests.exceptions.ConnectionError:
+        pytest.exit("API недоступен. Запусти: docker compose up -d")
+
 @pytest.fixture(scope='function')
 def unique_user_data():
     """Создание уникальных данных для пользователей"""
@@ -29,13 +40,31 @@ def unique_user_data():
         "password": "TestPass123!"
     }
 
-@pytest.fixture(scope='session', autouse=True)
-def check_api_available(base_url):
-    try:
-        response = requests.get(f"{base_url}/health", timeout=10)
-        assert response.status_code == 200, f"API вернул {response.status_code}"
-    except requests.exceptions.ConnectionError:
-        pytest.exit("API недоступен. Запусти: docker compose up -d")
+@pytest.fixture(scope = "session")
+def auth_client(api_session, config):
+    client_auth = AuthClient(base_url = config.BASE_URL, session = api_session, timeout = config.API_TIMEOUT)
+    return client_auth
+
+@pytest.fixture(scope = "session")
+def tasks_client(api_session, config):
+    task = TasksClient(base_url = config.BASE_URL, session = api_session, timeout = config.API_TIMEOUT)
+    return task
+
+@pytest.fixture(scope = "session")
+def user_token(auth_client, unique_user_data):
+    unique_id = uuid.uuid4().hex[:8]
+    user_data = {
+        "email": f"session_{unique_id}@example.com",
+        "username": f"session_{unique_id}",
+        "password": "TestPass123!"
+    }
+
+    res_register = auth_client.register(**user_data)
+    assert res_register.status_code == 201
+
+    res_login = auth_client.login(email=user_data["email"], password=user_data["password"])
+    assert res_login.status_code == 200
+    return res_login.json()["access_token"]
 
 
 

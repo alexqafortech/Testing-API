@@ -1,7 +1,5 @@
 import pytest
-import requests
 from api_tests.tests.conftest import unique_user_data
-
 
 @pytest.fixture
 def url_register():
@@ -12,14 +10,14 @@ def url_login():
     return "/api/v1/auth/login"
 
 @pytest.mark.auth
-def test_register_new_user(base_url, url_register, unique_user_data):
-    res = requests.post(f"{base_url}{url_register}", json=unique_user_data)
+def test_register_new_user(auth_client, unique_user_data):
+    res = auth_client.register(**unique_user_data)
     assert res.status_code == 201
     res_data = res.json()['user']
     assert "email" in res_data
 
 @pytest.mark.negative
-def test_register_duplicate_email(base_url, url_register, unique_user_data):
+def test_register_duplicate_email(auth_client, unique_user_data):
     original_data = {
         "email": unique_user_data['email'],
         "password": unique_user_data['password'],
@@ -30,27 +28,22 @@ def test_register_duplicate_email(base_url, url_register, unique_user_data):
         "password": original_data['password'],
         "username": "second_name"
     }
-    first_response = requests.post(f"{base_url}{url_register}", json=original_data)
+    first_response = auth_client.register(**original_data)
     assert first_response.status_code == 201
-    second_response = requests.post(f"{base_url}{url_register}", json=duplicate_email)
+    second_response = auth_client.register(**duplicate_email)
     assert second_response.status_code == 409
 
 @pytest.mark.auth
-def test_login_success(base_url, url_register, url_login, unique_user_data):
-    user = {
-        "email": unique_user_data['email'],
-        "password": unique_user_data['password'],
-        "username": unique_user_data['username']
-    }
-    res_register = requests.post(f"{base_url}{url_register}", json=user)
+def test_login_success(auth_client, unique_user_data):
+    res_register = auth_client.register(**unique_user_data)
     assert res_register.status_code == 201
 
-    res_login = requests.post(f"{base_url}{url_login}", json=user)
+    res_login = auth_client.login(unique_user_data['username'], unique_user_data['password'])
     data = res_login.json()
     assert "access_token" in data
 
 @pytest.mark.negative
-def test_login_wrong_password(base_url, url_register, url_login, unique_user_data):
+def test_login_wrong_password(auth_client, unique_user_data):
     user_register = {
         "email": unique_user_data['email'],
         "password": "TestPass123!",
@@ -61,14 +54,14 @@ def test_login_wrong_password(base_url, url_register, url_login, unique_user_dat
         "password": "WrongPass1!",
         "username": user_register['username']
     }
-    res_register = requests.post(f"{base_url}{url_register}", json=user_register)
+    res_register = auth_client.register(**user_register)
     assert res_register.status_code == 201
-    res_login = requests.post(f"{base_url}{url_login}", json=user_login)
+    res_login = auth_client.login(user_login['username'], user_login['password'])
     assert res_login.status_code == 401
 
 @pytest.mark.negative
-def test_login_nonexistent_user(base_url, url_login, unique_user_data):
-    res_login = requests.post(f"{base_url}{url_login}", json=unique_user_data)
+def test_login_nonexistent_user(auth_client, unique_user_data):
+    res_login = auth_client.login(unique_user_data['username'], unique_user_data['password'])
     assert res_login.status_code == 401
 
 @pytest.mark.negative
@@ -113,6 +106,6 @@ def test_login_nonexistent_user(base_url, url_login, unique_user_data):
         id = "empty_body"
     )
 ])
-def test_register_validation(user, expected_status_code, base_url, url_register):
-    res = requests.post(f"{base_url}{url_register}", json=user)
+def test_register_validation(user, expected_status_code, auth_client):
+    res = auth_client.register(**user)
     assert res.status_code == expected_status_code, f"Payload: {user}, получили {res.status_code}"
