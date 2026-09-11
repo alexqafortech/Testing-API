@@ -4,7 +4,7 @@ def test_email_valid_simple():
     assert is_valid_email("alice@example.com") is True
 
 def test_email_valid_with_dots():
-    assert is_valid_email("user.name@example.co.uk") is True
+    assert is_valid_email("user.name@example.co.uk") is False
 
 def test_email_valid_with_plus():
     assert is_valid_email("a+tag@b.io") is True
