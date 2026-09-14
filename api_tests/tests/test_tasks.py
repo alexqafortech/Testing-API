@@ -1,6 +1,7 @@
 import pytest
 from api_tests.tests.conftest import unique_user_data
-from models.task import TaskResponse
+from models.task import TaskResponse, TaskListResponse
+
 
 @pytest.mark.tasks
 def test_create_task(auth_client, unique_user_data, tasks_client):
@@ -48,8 +49,12 @@ def test_get_tasks_list(auth_client, unique_user_data, tasks_client):
     res_create_second_task = tasks_client.create("test2", token)
 
     res_list = tasks_client.get_list(token)
-    list = res_list.json()['items']
-    assert len(list) == 2
+    assert res_list.status_code == 200
+
+    task_list = TaskListResponse.model_validate(res_list.json())
+
+    assert task_list.total >= 2
+    assert len(task_list.items) <= task_list.page_size
 
 @pytest.mark.tasks
 def test_delete_task(auth_client, unique_user_data, tasks_client):

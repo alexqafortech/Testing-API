@@ -1,6 +1,8 @@
 import pytest
 import requests
 import uuid
+
+from clients.categories_client import CategoriesClient
 from config import Config
 from clients.auth_client import AuthClient
 from clients.tasks_client import TasksClient
@@ -49,6 +51,11 @@ def auth_client(api_session, config):
 def tasks_client(api_session, config):
     task = TasksClient(base_url = config.BASE_URL, session = api_session, timeout = config.API_TIMEOUT)
     return task
+
+@pytest.fixture(scope = "session")
+def category(api_session, config):
+    category = CategoriesClient(base_url = config.BASE_URL, session = api_session, timeout = config.API_TIMEOUT)
+    return category
 
 @pytest.fixture(scope = "session")
 def user_token(auth_client, unique_user_data):
