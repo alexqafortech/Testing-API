@@ -1,9 +1,9 @@
 import pytest
 import requests
 import uuid
-from src.config import Config
-from src.clients.auth_client import AuthClient
-from src.clients.tasks_client import TasksClient
+from config import Config
+from clients.auth_client import AuthClient
+from clients.tasks_client import TasksClient
 
 @pytest.fixture(scope = "session")
 def config():

@@ -1,5 +1,6 @@
 import pytest
 import requests
+from models.health import HealthResponse
 
 @pytest.mark.smoke
 def test_health_status_code(api_session, config):
@@ -23,4 +24,10 @@ def test_health_response_headers(api_session, config):
 def test_health_response_time(api_session, config):
     res = api_session.get(f"{config.BASE_URL}/health")
     assert res.elapsed.total_seconds() < 1
+
+@pytest.mark.smoke
+def test_health_response_schema(api_session, config):
+    response = api_session.get(f"{config.BASE_URL}/health")
+    health = HealthResponse.model_validate(response.json())
+    assert health.status == "healthy"
 

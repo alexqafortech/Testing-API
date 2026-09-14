@@ -1,4 +1,4 @@
-from src.clients.base_client import BaseClient
+from clients.base_client import BaseClient
 
 class AuthClient(BaseClient):
 

@@ -1,5 +1,6 @@
 import pytest
 from api_tests.tests.conftest import unique_user_data
+from models.task import TaskResponse
 
 @pytest.mark.tasks
 def test_create_task(auth_client, unique_user_data, tasks_client):
@@ -9,8 +10,11 @@ def test_create_task(auth_client, unique_user_data, tasks_client):
     res_login = auth_client.login(unique_user_data['username'], unique_user_data['password'])
     assert res_login.status_code == 200
     token = res_login.json()['access_token']
-
-    res_create_task = tasks_client.create("test", token)
+    res_create_task = tasks_client.create("Buy milk", token)
+    assert res_create_task.status_code == 201
+    task = TaskResponse.model_validate(res_create_task.json())
+    assert task.title == "Buy milk"
+    assert task.status == "TODO"
 
 @pytest.mark.tasks
 def test_get_task_by_id(auth_client, unique_user_data, tasks_client):
@@ -22,13 +26,14 @@ def test_get_task_by_id(auth_client, unique_user_data, tasks_client):
     assert res_login.status_code == 200
     token = res_login.json()['access_token']
 
-    res_create_task = tasks_client.create("test", token)
+    res_create_task = tasks_client.create("Buy milk", token)
     task_id = res_create_task.json()['id']
 
     res_get_task = tasks_client.get_by_id(task_id, token)
     assert res_get_task.status_code == 200
-    title = res_get_task.json()['title']
-    assert title is not None
+    task = TaskResponse.model_validate(res_get_task.json())
+    assert task.title == "Buy milk"
+    assert task.status == "TODO"
 
 @pytest.mark.tasks
 def test_get_tasks_list(auth_client, unique_user_data, tasks_client):

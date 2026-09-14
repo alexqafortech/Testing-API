@@ -1,5 +1,8 @@
 import pytest
 from api_tests.tests.conftest import unique_user_data
+from models.auth import TokenResponse, RegisterPayload
+from models.error import ErrorResponse
+from models.user import UserResponse
 
 @pytest.fixture
 def url_register():
@@ -13,8 +16,8 @@ def url_login():
 def test_register_new_user(auth_client, unique_user_data):
     res = auth_client.register(**unique_user_data)
     assert res.status_code == 201
-    res_data = res.json()['user']
-    assert "email" in res_data
+    res_data = UserResponse.model_validate(res.json()["user"])
+    assert res_data.email == unique_user_data['email']
 
 @pytest.mark.negative
 def test_register_duplicate_email(auth_client, unique_user_data):
@@ -39,8 +42,9 @@ def test_login_success(auth_client, unique_user_data):
     assert res_register.status_code == 201
 
     res_login = auth_client.login(unique_user_data['username'], unique_user_data['password'])
-    data = res_login.json()
-    assert "access_token" in data
+
+    token = TokenResponse.model_validate(res_login.json())
+    assert token.token_type == "bearer"
 
 @pytest.mark.negative
 def test_login_wrong_password(auth_client, unique_user_data):
@@ -109,3 +113,16 @@ def test_login_nonexistent_user(auth_client, unique_user_data):
 def test_register_validation(user, expected_status_code, auth_client):
     res = auth_client.register(**user)
     assert res.status_code == expected_status_code, f"Payload: {user}, получили {res.status_code}"
+
+    error = ErrorResponse.model_validate(res.json())
+    assert error.detail
+
+@pytest.mark.auth
+def test_register_with_model(auth_client, unique_user_data):
+    payload = RegisterPayload(
+        email = unique_user_data['email'],
+        username = unique_user_data['username'],
+        password = "ValidPass123!"
+    )
+    response = auth_client.register(**payload.model_dump())
+    assert response.status_code in (200, 201)
