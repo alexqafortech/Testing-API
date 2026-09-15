@@ -33,7 +33,8 @@ def unique_user_data():
 def check_api_available(base_url):
     try:
         response = requests.get(f"{base_url}/health", timeout=10)
-        assert response.status_code == 200, f"API вернул {response.status_code}"
+        if response.status_code != 200:
+            pytest.exit(f"API вернул {response.status_code}")
     except requests.exceptions.ConnectionError:
         pytest.exit("API недоступен. Запусти: docker compose up -d")
 
