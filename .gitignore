@@ -18,3 +18,8 @@ htmlcov/
 
 # OS
 .DS_Store
+
+.coverage
+coverage_report.md
+READINESS_CHECKLIST.md
+README.md
