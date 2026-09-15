@@ -74,5 +74,36 @@ def user_token(auth_client, unique_user_data):
     assert res_login.status_code == 200
     return res_login.json()["access_token"]
 
+@pytest.fixture(scope = "function")
+def authenticated_user(auth_client, unique_user_data):
+    res_reg = auth_client.register(**unique_user_data)
+    assert res_reg.status_code in (200, 201), f"Register failed: {res_reg.text}"
+
+    res_log = auth_client.login(unique_user_data["username"], unique_user_data["password"])
+    assert res_log.status_code == 200, f"Login failed: {res_log.text}"
+
+    token = res_log.json()["access_token"]
+    return unique_user_data, token
+
+@pytest.fixture(scope = "function")
+def authed_session(authenticated_user):
+    user_data, token = authenticated_user
+    session = requests.Session()
+    session.headers.update({
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": f"Bearer {token}"
+    })
+
+    yield session
+    session.close()
+
+@pytest.fixture(scope="function")
+def authed_tasks_client(config, authed_session):
+    return TasksClient(config.BASE_URL, authed_session, config.API_TIMEOUT)
+
+@pytest.fixture(scope="function")
+def authed_categories_client(config, authed_session):
+    return CategoriesClient(config.BASE_URL, authed_session, config.API_TIMEOUT)
 
 

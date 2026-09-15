@@ -31,17 +31,10 @@ def test_health_response_contract(api_session, config):
     health = HealthResponse.model_validate(res.json())
 
 @pytest.mark.contracts
-def test_create_task_response_contract(auth_client, unique_user_data, tasks_client):
-    res_register = auth_client.register(**unique_user_data)
-    assert res_register.status_code == 201
-
-    res_login = auth_client.login(unique_user_data['username'], unique_user_data['password'])
-    assert res_login.status_code == 200
-
-    token = res_login.json()['access_token']
-    res_create_task = tasks_client.create("Buy milk", token)
-
+def test_create_task_response_contract(authed_tasks_client, tasks_client):
+    res_create_task = authed_tasks_client.create("Buy milk")
     assert res_create_task.status_code == 201
+
     task = TaskResponse.model_validate(res_create_task.json())
     assert task.title == "Buy milk"
     assert task.status == "TODO"
@@ -59,22 +52,14 @@ def test_task_with_invalid_status_fails_validation():
         })
 
 @pytest.mark.contracts
-def test_category_stat(auth_client, unique_user_data, category):
-    res_register = auth_client.register(**unique_user_data)
-    assert res_register.status_code == 201
-
-    res_login = auth_client.login(unique_user_data['username'], unique_user_data['password'])
-    assert res_login.status_code == 200
-
-    token = res_login.json()['access_token']
-
+def test_category_stat(authed_categories_client, category):
     payload = {"color": "#784554", "name": "Work"}
-    res_create_category = category.create(payload, token)
+    res_create_category = authed_categories_client.create(payload)
     assert res_create_category.status_code == 201
 
     category_id = res_create_category.json()['id']
 
-    res_get_category = category.get_stats(category_id, token)
+    res_get_category = authed_categories_client.get_stats(category_id)
     assert res_get_category.status_code == 200
 
     res_get_category = CategoryStatsResponse.model_validate(res_get_category.json())

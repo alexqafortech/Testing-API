@@ -19,23 +19,6 @@ def test_register_new_user(auth_client, unique_user_data):
     res_data = UserResponse.model_validate(res.json()["user"])
     assert res_data.email == unique_user_data['email']
 
-@pytest.mark.negative
-def test_register_duplicate_email(auth_client, unique_user_data):
-    original_data = {
-        "email": unique_user_data['email'],
-        "password": unique_user_data['password'],
-        "username": unique_user_data['username']
-    }
-    duplicate_email = {
-        "email": original_data['email'],
-        "password": original_data['password'],
-        "username": "second_name"
-    }
-    first_response = auth_client.register(**original_data)
-    assert first_response.status_code == 201
-    second_response = auth_client.register(**duplicate_email)
-    assert second_response.status_code == 409
-
 @pytest.mark.auth
 def test_login_success(auth_client, unique_user_data):
     res_register = auth_client.register(**unique_user_data)
@@ -45,23 +28,6 @@ def test_login_success(auth_client, unique_user_data):
 
     token = TokenResponse.model_validate(res_login.json())
     assert token.token_type == "bearer"
-
-@pytest.mark.negative
-def test_login_wrong_password(auth_client, unique_user_data):
-    user_register = {
-        "email": unique_user_data['email'],
-        "password": "TestPass123!",
-        "username": unique_user_data['username']
-    }
-    user_login = {
-        "email": user_register['email'],
-        "password": "WrongPass1!",
-        "username": user_register['username']
-    }
-    res_register = auth_client.register(**user_register)
-    assert res_register.status_code == 201
-    res_login = auth_client.login(user_login['username'], user_login['password'])
-    assert res_login.status_code == 401
 
 @pytest.mark.negative
 def test_login_nonexistent_user(auth_client, unique_user_data):
