@@ -1,11 +1,12 @@
 import pytest
 import requests
 import uuid
-
+import psycopg2
 from clients.categories_client import CategoriesClient
 from config import Config
 from clients.auth_client import AuthClient
 from clients.tasks_client import TasksClient
+from db.helpers import DBHelper
 
 @pytest.fixture(scope = "session")
 def config():
@@ -106,4 +107,28 @@ def authed_tasks_client(config, authed_session):
 def authed_categories_client(config, authed_session):
     return CategoriesClient(config.BASE_URL, authed_session, config.API_TIMEOUT)
 
+@pytest.fixture(scope="session")
+def db_connection(config):
+    """Подключение к тестовой БД. Одно на весь прогон."""
+    conn = psycopg2.connect(
+        host = config.DB_HOST,
+        port = config.DB_PORT,
+        dbname = config.DB_NAME,
+        user = config.DB_USER,
+        password = config.DB_PASSWORD
+    )
 
+    yield conn
+    conn.close()
+
+@pytest.fixture(scope="function")
+def db_cursor(db_connection):
+    """Курсор для выполнения запросов. Новый на каждый тест."""
+    cursor = db_connection.cursor()
+    yield cursor
+    db_connection.rollback()
+    cursor.close()
+
+@pytest.fixture(scope="session")
+def db(db_connection):
+    return DBHelper(db_connection)
