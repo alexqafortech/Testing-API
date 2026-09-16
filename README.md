@@ -1,65 +1,47 @@
-# User Service - автотесты на pytest
+# API Tests - Task Management API
 
-Учебный проект: автотесты на сервис работы с пользователями.
-Покрывает регистрацию, логин, удаление, валидацию email и пароля.
+Автотесты для [Task Management API](https://github.com/balakleeva/task_management_api)
 
-## Стек
+## Требования
+- Python 3.10+
+- Docker и Docker Compose
 
-- Python 3.12.13
-- pytest 8.4.2
-- pytest-cov 7.1.0
+## Быстрый старт
 
-## Структура проекта
-
-```
-src/                # тестируемый код
-  ├── user_service.py
-  └── validators.py
-tests/
-  ├── conftest.py   # общие фикстуры
-  ├── unit/         # юнит-тесты (без I/O)
-  └── integration/  # интеграционные тесты (с JSON-хранилищем)
-```
-
-## Установка и запуск
-
-1. Клонировать репозиторий:
-   ```bash
-   git clone https://github.com/alexqafortech/user-service-tests.git
-   cd user-service-tests
+1. Склонируй репозиторий https://github.com/balakleeva/task_management_api
+2. Создай файл .env
+    ```bash
+   cp .env.example .env
+    ```
+3. Подними API:
+    ```bash
+   docker compose up -d
    ```
-
-2. Создать виртуальное окружение и установить зависимости:
-
-   ```bash
-   python3 -m venv venv
-   source venv/bin/activate     # macOS / Linux
+4. Создай виртуальное окружение
+    ```bash
+   python -m venv venv
+   ```
+5. Установи библиотеки
+    ```bash
    pip install -r requirements.txt
    ```
 
-3. Запустить тесты:
-   ```bash
-   pytest                       # все тесты
-   pytest -m smoke              # только смок
-   pytest -m regression         # только регрессия
-   pytest -m storage            # только тесты связанные с хранилищем
-   pytest --cov=src             # с покрытием
-   ```
+## Запуск тестов по группам
 
-## Маркеры
+```bash
+    pytest -v # Все тесты
+    pytest -m auth -v # Тесты авторизации
+    pytest -m negative -v # Негативные сценарии (невалидные данные)
+    pytest -m tasks -v # Тесты связанные с задачами
+    pytest -m contracts -v # Контрактные тесты
+    pytest -m db -v # Тесты базы данных
+```
 
-- `smoke` — критичные тесты, прогон после деплоя
-- `regression` — полный регрессионный набор
-- `slow` — медленные тесты, гонять только в CI
-- `validators` — тесты валидаторов
-- `auth` - тесты регистрации и логинов
-- `storage` - тесты работы с хранилищем
-
-
-## Что покрыто тестами
-
-- Валидация email и пароля (классы эквивалентности, граничные значения)
-- Регистрация пользователя (happy path, дубль, невалидные данные)
-- Логин (правильный пароль, неправильный пароль, несуществующий email)
-- Удаление пользователя (существующий, несуществующий)
-- Покрытие кода: 97% (см. pytest --cov=src)
+## Структура проекта
+- api_tests/src/clients/ - API-клиенты (BaseClient, AuthClient, TasksClient, CategoriesClient)
+- api_tests/src/models/ - Pydantic-модели ответов API
+- api_tests/src/db/ - Хелперы для работы с БД
+- api_tests/src/config.py - Тесты с проверкой в БД
+- api_tests/tests/api/ - API-тесты
+- api_tests/tests/db/ - Тесты с проверкой в БД
+- api_tests/tests/conftest.py - Общие фикстуры
