@@ -6,7 +6,6 @@ from clients.categories_client import CategoriesClient
 from config import Config
 from clients.auth_client import AuthClient
 from clients.tasks_client import TasksClient
-from db.helpers import DBHelper
 
 @pytest.fixture(scope = "session")
 def config():
@@ -120,15 +119,3 @@ def db_connection(config):
 
     yield conn
     conn.close()
-
-@pytest.fixture(scope="function")
-def db_cursor(db_connection):
-    """Курсор для выполнения запросов. Новый на каждый тест."""
-    cursor = db_connection.cursor()
-    yield cursor
-    db_connection.rollback()
-    cursor.close()
-
-@pytest.fixture(scope="session")
-def db(db_connection):
-    return DBHelper(db_connection)
