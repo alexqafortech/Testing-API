@@ -2,12 +2,17 @@ import pytest
 import requests
 import uuid
 
-@pytest.fixture(scope='session')
-def base_url():
-    return "http://localhost:8000"
+from clients.categories_client import CategoriesClient
+from config import Config
+from clients.auth_client import AuthClient
+from clients.tasks_client import TasksClient
+
+@pytest.fixture(scope = "session")
+def config():
+    return Config()
 
 @pytest.fixture(scope='session')
-def api_session(base_url):
+def api_session():
     """HTTP-сессия, используемая между тестами"""
     session = requests.Session()
     session.headers.update({
@@ -19,6 +24,15 @@ def api_session(base_url):
 
     session.close()
 
+@pytest.fixture(scope='session', autouse=True)
+def check_api_available(config):
+    try:
+        response = requests.get(f"{config.BASE_URL}/health", timeout=10)
+        if response.status_code != 200:
+            pytest.exit(f"API вернул {response.status_code}")
+    except requests.exceptions.ConnectionError:
+        pytest.exit("API недоступен. Запусти: docker compose up -d")
+
 @pytest.fixture(scope='function')
 def unique_user_data():
     """Создание уникальных данных для пользователей"""
@@ -29,14 +43,51 @@ def unique_user_data():
         "password": "TestPass123!"
     }
 
-@pytest.fixture(scope='session', autouse=True)
-def check_api_available(base_url):
-    try:
-        response = requests.get(f"{base_url}/health", timeout=10)
-        if response.status_code != 200:
-            pytest.exit(f"API вернул {response.status_code}")
-    except requests.exceptions.ConnectionError:
-        pytest.exit("API недоступен. Запусти: docker compose up -d")
+@pytest.fixture(scope = "session")
+def auth_client(api_session, config):
+    client_auth = AuthClient(base_url = config.BASE_URL, session = api_session, timeout = config.API_TIMEOUT)
+    return client_auth
 
+@pytest.fixture(scope = "session")
+def tasks_client(api_session, config):
+    task = TasksClient(base_url = config.BASE_URL, session = api_session, timeout = config.API_TIMEOUT)
+    return task
+
+@pytest.fixture(scope = "session")
+def category(api_session, config):
+    res_category = CategoriesClient(base_url = config.BASE_URL, session = api_session, timeout = config.API_TIMEOUT)
+    return res_category
+
+@pytest.fixture(scope = "function")
+def authenticated_user(auth_client, unique_user_data):
+    res_reg = auth_client.register(**unique_user_data)
+    assert res_reg.status_code == 201, f"Register failed: {res_reg.text}"
+
+    res_log = auth_client.login(unique_user_data["username"], unique_user_data["password"])
+    assert res_log.status_code == 200, f"Login failed: {res_log.text}"
+
+    token = res_log.json()["access_token"]
+    return unique_user_data, token
+
+@pytest.fixture(scope = "function")
+def authed_session(authenticated_user):
+    user_data, token = authenticated_user
+    session = requests.Session()
+    session.headers.update({
+        "Content-Type": "application/json",
+        "Accept": "application/json",
+        "Authorization": f"Bearer {token}"
+    })
+
+    yield session
+    session.close()
+
+@pytest.fixture(scope="function")
+def authed_tasks_client(config, authed_session):
+    return TasksClient(config.BASE_URL, authed_session, config.API_TIMEOUT)
+
+@pytest.fixture(scope="function")
+def authed_categories_client(config, authed_session):
+    return CategoriesClient(config.BASE_URL, authed_session, config.API_TIMEOUT)
 
 
