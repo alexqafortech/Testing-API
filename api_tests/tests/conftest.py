@@ -55,29 +55,13 @@ def tasks_client(api_session, config):
 
 @pytest.fixture(scope = "session")
 def category(api_session, config):
-    category = CategoriesClient(base_url = config.BASE_URL, session = api_session, timeout = config.API_TIMEOUT)
-    return category
-
-@pytest.fixture(scope = "session")
-def user_token(auth_client, unique_user_data):
-    unique_id = uuid.uuid4().hex[:8]
-    user_data = {
-        "email": f"session_{unique_id}@example.com",
-        "username": f"session_{unique_id}",
-        "password": "TestPass123!"
-    }
-
-    res_register = auth_client.register(**user_data)
-    assert res_register.status_code == 201
-
-    res_login = auth_client.login(email=user_data["email"], password=user_data["password"])
-    assert res_login.status_code == 200
-    return res_login.json()["access_token"]
+    res_category = CategoriesClient(base_url = config.BASE_URL, session = api_session, timeout = config.API_TIMEOUT)
+    return res_category
 
 @pytest.fixture(scope = "function")
 def authenticated_user(auth_client, unique_user_data):
     res_reg = auth_client.register(**unique_user_data)
-    assert res_reg.status_code in (200, 201), f"Register failed: {res_reg.text}"
+    assert res_reg.status_code == 201, f"Register failed: {res_reg.text}"
 
     res_log = auth_client.login(unique_user_data["username"], unique_user_data["password"])
     assert res_log.status_code == 200, f"Login failed: {res_log.text}"

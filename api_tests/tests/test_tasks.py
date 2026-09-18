@@ -24,7 +24,9 @@ def test_get_task_by_id(authed_tasks_client):
 @pytest.mark.tasks
 def test_get_tasks_list(authed_tasks_client):
     res_create_first_task = authed_tasks_client.create("test1")
+    assert res_create_first_task.status_code == 201
     res_create_second_task = authed_tasks_client.create("test2")
+    assert res_create_second_task.status_code == 201
 
     res_list = authed_tasks_client.get_list()
     assert res_list.status_code == 200
@@ -37,9 +39,11 @@ def test_get_tasks_list(authed_tasks_client):
 @pytest.mark.tasks
 def test_delete_task(authed_tasks_client):
     res_create_task = authed_tasks_client.create("test1")
+    assert res_create_task.status_code == 201
     task_id = res_create_task.json()['id']
 
     res_delete_task = authed_tasks_client.delete(task_id)
+    assert res_delete_task.status_code == 204
 
     res_get_task = authed_tasks_client.get_by_id(task_id)
     assert res_get_task.status_code == 404

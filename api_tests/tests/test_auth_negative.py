@@ -61,15 +61,15 @@ def test_login_wrong_password(auth_client, unique_user_data):
 @pytest.mark.auth
 @pytest.mark.negative
 @pytest.mark.parametrize("headers, expected", [
-    pytest.param({}, (401, 403), id = "Empty header"),
-    pytest.param({"Authorization": ""}, (401, 403), id = "Empty value of Authorization"),
-    pytest.param({"Authorization": "Bearer"}, (401, 403), id = "Without token"),
-    pytest.param({"Authorization": "Basic 2131mlaskdc"}, (401, 403), id = "Basic auth")
+    pytest.param({},  403, id = "Empty header"),
+    pytest.param({"Authorization": ""}, 403, id = "Empty value of Authorization"),
+    pytest.param({"Authorization": "Bearer"}, 403, id = "Without token"),
+    pytest.param({"Authorization": "Basic 2131mlaskdc"}, 403, id = "Basic auth")
 ])
 def test_auth_edge_cases(tasks_client, headers, expected):
     res = tasks_client.post(tasks_client.PREFIX + "/", json = {"title": "Edge cases"}, headers = headers)
 
-    assert res.status_code in expected
+    assert res.status_code == expected
 
 
 @pytest.mark.tasks
@@ -90,4 +90,4 @@ def test_cannot_access_other_users_task(authed_tasks_client, auth_client, config
     second_user = TasksClient(config.BASE_URL, second_session)
 
     response = second_user.get_by_id(task_id)
-    assert response.status_code in (403, 404)
+    assert response.status_code == 404

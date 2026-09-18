@@ -81,7 +81,7 @@ def test_register_validation(user, expected_status_code, auth_client):
     assert res.status_code == expected_status_code, f"Payload: {user}, получили {res.status_code}"
 
     error = ErrorResponse.model_validate(res.json())
-    assert error.detail
+    assert error.detail == "Validation error"
 
 @pytest.mark.auth
 def test_register_with_model(auth_client, unique_user_data):
@@ -91,4 +91,4 @@ def test_register_with_model(auth_client, unique_user_data):
         password = "ValidPass123!"
     )
     response = auth_client.register(**payload.model_dump())
-    assert response.status_code in (200, 201)
+    assert response.status_code == 201

@@ -1,5 +1,4 @@
 import pytest
-from api_tests.tests.conftest import unique_user_data
 from models.category import CategoryStatsResponse
 from models.user import UserResponse
 from models.auth import TokenResponse
@@ -48,7 +47,10 @@ def test_task_with_invalid_status_fails_validation():
             "title": "Test",
             "status": "INVALID_STATUS",
             "priority": "HIGH",
-            "user_id": "u1"
+            "user_id": "u1",
+            "is_overdue": False,
+            "created_at": "2026-09-18T10:00:00Z",
+            "updated_at": "2026-09-18T10:00:00Z"
         })
 
 @pytest.mark.contracts
