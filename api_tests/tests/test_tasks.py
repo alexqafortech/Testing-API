@@ -45,11 +45,13 @@ def test_get_tasks_list(auth_client, unique_user_data, tasks_client):
     token = res_login.json()['access_token']
 
     res_create_first_task = tasks_client.create("test1", token)
+    assert res_create_first_task.status_code == 201
     res_create_second_task = tasks_client.create("test2", token)
+    assert res_create_second_task.status_code == 201
 
     res_list = tasks_client.get_list(token)
-    list = res_list.json()['items']
-    assert len(list) == 2
+    count_of_items = res_list.json()['items']
+    assert len(count_of_items) == 2
 
 @pytest.mark.tasks
 def test_delete_task(auth_client, unique_user_data, tasks_client):
@@ -64,6 +66,7 @@ def test_delete_task(auth_client, unique_user_data, tasks_client):
     task_id = res_create_task.json()['id']
 
     res_delete_task = tasks_client.delete(task_id, token)
+    assert res_delete_task.status_code == 204
 
     res_get_task = tasks_client.get_by_id(task_id, token)
     assert res_get_task.status_code == 404
