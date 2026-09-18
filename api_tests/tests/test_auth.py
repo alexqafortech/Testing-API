@@ -42,6 +42,7 @@ def test_login_success(auth_client, unique_user_data):
     assert res_register.status_code == 201
 
     res_login = auth_client.login(unique_user_data['username'], unique_user_data['password'])
+    assert res_login.status_code == 200
 
     token = TokenResponse.model_validate(res_login.json())
     assert token.token_type == "bearer"
@@ -115,7 +116,7 @@ def test_register_validation(user, expected_status_code, auth_client):
     assert res.status_code == expected_status_code, f"Payload: {user}, получили {res.status_code}"
 
     error = ErrorResponse.model_validate(res.json())
-    assert error.detail
+    assert error.detail == "Validation error"
 
 @pytest.mark.auth
 def test_register_with_model(auth_client, unique_user_data):

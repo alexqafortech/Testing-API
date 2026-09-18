@@ -55,11 +55,11 @@ def tasks_client(api_session, config):
 
 @pytest.fixture(scope = "session")
 def category(api_session, config):
-    category = CategoriesClient(base_url = config.BASE_URL, session = api_session, timeout = config.API_TIMEOUT)
-    return category
+    res_category = CategoriesClient(base_url = config.BASE_URL, session = api_session, timeout = config.API_TIMEOUT)
+    return res_category
 
 @pytest.fixture(scope = "session")
-def user_token(auth_client, unique_user_data):
+def user_token(auth_client):
     unique_id = uuid.uuid4().hex[:8]
     user_data = {
         "email": f"session_{unique_id}@example.com",
@@ -70,7 +70,7 @@ def user_token(auth_client, unique_user_data):
     res_register = auth_client.register(**user_data)
     assert res_register.status_code == 201
 
-    res_login = auth_client.login(email=user_data["email"], password=user_data["password"])
+    res_login = auth_client.login(username=user_data["username"], password=user_data["password"])
     assert res_login.status_code == 200
     return res_login.json()["access_token"]
 
