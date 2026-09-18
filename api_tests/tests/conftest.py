@@ -66,5 +66,14 @@ def user_token(auth_client, unique_user_data):
     assert res_login.status_code == 200
     return res_login.json()["access_token"]
 
+@pytest.fixture(scope='session', autouse=True)
+def check_api_available(base_url):
+    try:
+        response = requests.get(f"{base_url}/health", timeout=10)
+        if response.status_code != 200:
+            pytest.exit(f"API вернул {response.status_code}")
+    except requests.exceptions.ConnectionError:
+        pytest.exit("API недоступен. Запусти: docker compose up -d")
+
 
 
