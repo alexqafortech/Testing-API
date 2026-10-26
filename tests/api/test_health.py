@@ -1,5 +1,4 @@
 import pytest
-import requests
 from models.health import HealthResponse
 
 @pytest.mark.smoke

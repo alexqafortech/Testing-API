@@ -1,5 +1,5 @@
 import pytest
-from db.helpers import DBHelper
+from src.db.helpers import DBHelper
 
 @pytest.fixture(scope="function")
 def db_cursor(db_connection):

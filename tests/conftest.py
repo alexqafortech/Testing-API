@@ -2,10 +2,10 @@ import pytest
 import requests
 import uuid
 import psycopg2
-from clients.categories_client import CategoriesClient
+from src.clients.categories_client import CategoriesClient
 from config import Config
-from clients.auth_client import AuthClient
-from clients.tasks_client import TasksClient
+from src.clients.auth_client import AuthClient
+from src.clients.tasks_client import TasksClient
 
 @pytest.fixture(scope = "session")
 def config():

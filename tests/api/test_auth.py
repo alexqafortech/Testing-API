@@ -1,5 +1,5 @@
 import pytest
-from api_tests.tests.conftest import unique_user_data
+from tests.conftest import unique_user_data
 from models.auth import TokenResponse, RegisterPayload
 from models.error import ErrorResponse
 from models.user import UserResponse
